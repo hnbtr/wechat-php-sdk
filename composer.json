@@ -1,0 +1,16 @@
+{
+  "name": "hnbtr/wechat-php-sdk",
+  "description": "wechat sdk php version",
+  "authors": [
+    {
+      "name": "wangbing",
+      "email": "pithyone@vip.qq.com"
+    }
+  ],
+  "require": {},
+  "autoload": {
+    "psr-4": {
+      "wechat\\": "src/"
+    }
+  }
+}
