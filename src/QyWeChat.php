@@ -1,4 +1,5 @@
 <?php
+
 namespace wechat;
 
 
@@ -166,7 +167,7 @@ class QyWeChat
         //Find out if the given array is a numerical array
         $keys = array_keys($arr);
         $max_length = count($arr) - 1;
-        if (($keys [0] === 0) && ($keys [$max_length] === $max_length)) { //See if the first key is 0 and last key is length - 1
+        if (!empty($keys) && ($keys [0] === 0) && ($keys [$max_length] === $max_length)) { //See if the first key is 0 and last key is length - 1
             $is_list = true;
             for ($i = 0; $i < count($keys); $i++) { //See if each key correspondes to its position
                 if ($i != $keys [$i]) { //A key fails at position check.
@@ -1024,8 +1025,8 @@ class QyWeChat
         }
         $authname = 'qywechat_jsapi_ticket' . $appid;
         if ($rs = $this->getCache($authname)) {
-            $this->jsapi_ticket = $rs;
-            return $rs;
+            $this->jsapi_ticket = $rs['jsapi_ticket'];
+            return ['jsapi_ticket' => $this->jsapi_ticket, 'invalid' => $rs['expire'] - (time() - $rs['time'])];
         }
         $result = $this->http_get(self::API_URL_PREFIX . self::TICKET_GET_URL . 'access_token=' . $this->access_token);
         if ($result) {
@@ -1036,12 +1037,15 @@ class QyWeChat
                 return false;
             }
             $this->jsapi_ticket = $json['ticket'];
-            $expire = $json['expires_in'] ? intval($json['expires_in']) - 100 : 3600;
-            $this->setCache($authname, $this->jsapi_ticket, $expire);
-            return $this->jsapi_ticket;
+            $expire = $json['expires_in'] ? intval($json['expires_in']) - 200 : 3600;
+            $timestamp = time();
+            $rs = ['jsapi_ticket' => $this->jsapi_ticket, 'time' => $timestamp, 'expire' => $expire];
+            $this->setCache($authname, $rs, $expire);
+            return ['jsapi_ticket' => $this->jsapi_ticket, 'invalid' => $rs['expire'] - (time() - $rs['time'])];
         }
         return false;
     }
+
 
     /**
      * 获取JsApi使用签名
